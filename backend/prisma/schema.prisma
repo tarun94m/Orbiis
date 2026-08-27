@@ -1,0 +1,107 @@
+// ORBIIS database schema
+// Kept intentionally simple for the MVP.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ResearchSession {
+  id        String         @id @default(cuid())
+  createdAt DateTime       @default(now())
+  ideas     ResearchIdea[]
+
+  @@map("research_sessions")
+}
+
+model ResearchIdea {
+  id             String   @id @default(cuid())
+  sessionId      String
+  session        ResearchSession @relation(fields: [sessionId], references: [id])
+  version        Int
+  rawInput       String
+  rawAbstract    String?
+  structuredJson Json?
+  createdAt      DateTime @default(now())
+
+  ideaPapers   IdeaPaper[]
+  analysisRuns AnalysisRun[]
+
+  @@map("research_ideas")
+}
+
+model Paper {
+  id                String   @id @default(cuid())
+  semanticScholarId String   @unique
+  title             String
+  abstract          String?
+  authorsJson       Json?
+  year              Int?
+  venue             String?
+  doi               String?
+  citationCount     Int?
+  url               String?
+  rawJson           Json?
+  createdAt         DateTime @default(now())
+
+  ideaPapers    IdeaPaper[]
+  claimEvidence ClaimEvidence[]
+
+  @@map("papers")
+}
+
+model IdeaPaper {
+  id              String   @id @default(cuid())
+  ideaId          String
+  idea            ResearchIdea @relation(fields: [ideaId], references: [id])
+  paperId         String
+  paper           Paper    @relation(fields: [paperId], references: [id])
+  retrievalQuery  String?
+  relevanceReason String?
+  createdAt       DateTime @default(now())
+
+  @@unique([ideaId, paperId])
+  @@map("idea_papers")
+}
+
+model AnalysisRun {
+  id           String   @id @default(cuid())
+  ideaId       String
+  idea         ResearchIdea @relation(fields: [ideaId], references: [id])
+  model        String
+  promptVersion String
+  outputJson   Json
+  createdAt    DateTime @default(now())
+
+  claims Claim[]
+
+  @@map("analysis_runs")
+}
+
+model Claim {
+  id             String   @id @default(cuid())
+  analysisRunId  String
+  analysisRun    AnalysisRun @relation(fields: [analysisRunId], references: [id])
+  claimType      String   // overlap | collision | objection | refinement | contribution
+  claimText      String
+  severity       String?  // high | medium | low
+  supportStatus  String   // supported | unsupported | ai-reasoning-only
+
+  evidence ClaimEvidence[]
+
+  @@map("claims")
+}
+
+model ClaimEvidence {
+  id      String @id @default(cuid())
+  claimId String
+  claim   Claim  @relation(fields: [claimId], references: [id])
+  paperId String
+  paper   Paper  @relation(fields: [paperId], references: [id])
+
+  @@map("claim_evidence")
+}
