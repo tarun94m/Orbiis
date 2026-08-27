@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ORBIIS
 
 **Before you commit to a research idea, try to break it.**
@@ -161,3 +162,6 @@ before it's trusted — invalid indices are dropped, never guessed at.
 Per spec: no auth, no payments, no teams, no Zotero/Mendeley, no citation manager,
 no systematic review workflow. Idea iteration ("Refine this idea") is session-based
 only — versions live in Postgres per session but there's no account system.
+=======
+# Orbiis
+>>>>>>> 056c638f1526a05a17925047116e3bcef9863ab2
